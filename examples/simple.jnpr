@@ -1,0 +1,31 @@
+-- this is a comment
+
+(*
+    Here's a multiline comment
+*)
+
+-- define a function
+def square { x:
+    x * x
+}
+
+square = { x: x * x }
+
+-- call a function
+square 2 --> 4
+
+-- control flow
+def abs x {
+    if x < 0 {
+        -x
+    } else {
+        x
+    }
+}
+
+def print_times msg n {
+    n.times {
+        print "hi there"
+    }
+}
+
