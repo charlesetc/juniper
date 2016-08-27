@@ -1,3 +1,4 @@
+# token.jq
 
 def take_while(f):
     {lines: ., index: 0} 
@@ -6,9 +7,14 @@ def take_while(f):
             .lines[.index] | f;
             {lines: .lines, index: (.index+1)}
         )
-    ] | last | {token: .lines[:.index+1], text: .lines[.index+1:]};
+    ]
+    | last
+    | {token: .lines[:.index+1], text: .lines[.index+1:]};
 
 def space:
     take_while(.==" ");
 
-def tokens: split("") | space;
+def number:
+    take_while(. > "0" and . < "9");
+
+def tokens: split("") | number;
