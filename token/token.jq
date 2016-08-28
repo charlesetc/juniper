@@ -18,7 +18,17 @@ def space:
 def number:
     take_while(. > "0" and . < "9");
 
-def TOKENS: [space, number];
+def make_token(name): {token: name, text: .[1:]};
+
+def single_char_token:
+    .[0] as $char
+    | if $char == "(" then
+        make_token("open")
+    elif $char == ")" then
+        make_token("close")
+    else null end;
+
+def TOKENS: [space, number, single_char_token];
 
 def single_token:
     # not the most efficient
