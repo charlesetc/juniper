@@ -18,32 +18,66 @@ def alias(name):
         else null end;
 
 def space:
-    take_while(.==" ") | alias("space");
+    take_while(.==" " or .=="\t") | alias("space");
 
 def number:
     take_while(. > "0" and . < "9") | alias("number");
 
+def break_symbols:
+    "();:{}[].,* \n\t";
+
+def ident:
+     take_while(inside(break_symbols) | not) | alias("ident");
+
+def quote(q):
+    .[1:]
+    | take_while(.!=q)
+    | .text = .text[1:]
+    | alias("string")
+    ;
+
+def comment:
+    if (.[:2] | add) == "--" then
+        take_while(.!="\n")
+    else
+        empty
+    end
+    | alias("comment");
+
 def make_token(name): {token: {name: name}, text: .[1:]};
 
-def single_char_token:
+def single_token:
     .[0] as $char
     | if $char == "(" then
-        make_token("open")
+        make_token("open_round")
     elif $char == ")" then
-        make_token("close")
-    else null end;
-
-def TOKENS: [space, number, single_char_token];
-
-def single_token:
-    # not the most efficient
-    [
-        TOKENS
-        | .[]
-        | select(.token!=null)
-    ]
-    | first
-    ;
+        make_token("close_round")
+    elif $char == "{" then
+        make_token("open_curly")
+    elif $char == "}" then
+        make_token("close_curly")
+    elif $char == "." then
+        make_token("dot")
+    elif $char == "\n" or $char == ";" then
+        make_token("newline")
+    elif $char == "-" then
+        comment // make_token("hyphen")
+    elif $char == "*" then
+        make_token("star")
+    elif $char == ":" then
+        make_token("colon")
+    elif $char == " " then
+        space
+    elif $char == "\"" or $char == "'" then
+        quote($char)
+    elif $char > "0" and $char < "9" then
+        number
+    elif $char == null then
+        null
+    else 
+        # treat it as an ident
+        ident
+    end;
 
 def tokens:
     {text: ., tokens: []}

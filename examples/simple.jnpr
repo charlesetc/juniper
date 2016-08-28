@@ -11,10 +11,16 @@ def square { x:
     x * x
 }
 
+def minus { a b:
+    a - b
+}
+
 square = { x: x * x }
 
 -- call a function
 square 2 --> 4
+
+minus 2 3
 
 -- control flow
 def abs x {
