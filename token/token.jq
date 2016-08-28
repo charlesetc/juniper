@@ -4,7 +4,7 @@ def take_while(f):
     {lines: ., index: 0} 
     | [
         while(
-            .lines[.index:] | f;
+            .lines[.index:] | map(.char) | f;
             {lines: .lines, index: (.index+1)}
         )
     ]
@@ -14,7 +14,11 @@ def take_while(f):
 
 def alias(name):
     .token = if .token != null then
-        {name: name, data: .token | add}
+        {
+            name: name,
+            data: .token | map(.char) | add,
+            range: .token | map(.char_number) | [first, last+1]
+        }
         else null end;
 
 def space:
@@ -37,7 +41,7 @@ def quote(q):
     ;
 
 def if_chars(chars; f):
-    if (.[:(chars | length)] | add) == chars then
+    if (.[:(chars | length)] | map(.char) | add) == chars then
         f
     else
         empty
@@ -59,10 +63,17 @@ def multiline_comment:
     | alias("comment")
     ;
 
-def make_token(name): {token: {name: name}, text: .[1:]};
+def make_token(name):
+    {
+        token: {
+            name: name,
+            range: .[0].char_number | [., .+1],
+        },
+        text: .[1:],
+    };
 
 def single_token:
-    .[0] as $char
+    .[0].char as $char
     | if $char == "(" then
         multiline_comment
         // make_token("open_round")
