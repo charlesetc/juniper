@@ -12,13 +12,18 @@ def take_while(f):
     | {token: .lines[:.index+1], text: .lines[.index+1:]}
     ;
 
+def alias(name):
+    .token = if .token != null then
+        {name: name, data: .token | add}
+        else null end;
+
 def space:
-    take_while(.==" ");
+    take_while(.==" ") | alias("space");
 
 def number:
-    take_while(. > "0" and . < "9");
+    take_while(. > "0" and . < "9") | alias("number");
 
-def make_token(name): {token: name, text: .[1:]};
+def make_token(name): {token: {name: name}, text: .[1:]};
 
 def single_char_token:
     .[0] as $char
