@@ -1,3 +1,8 @@
 import "token" as token;
-split("")
-| token::tokens
+
+def main:
+    split("")
+    | token::tokens
+    ;
+
+main

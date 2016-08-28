@@ -4,7 +4,7 @@ def take_while(f):
     {lines: ., index: 0} 
     | [
         while(
-            .lines[.index] | f;
+            .lines[.index:] | f;
             {lines: .lines, index: (.index+1)}
         )
     ]
@@ -18,38 +18,54 @@ def alias(name):
         else null end;
 
 def space:
-    take_while(.==" " or .=="\t") | alias("space");
+    take_while(.[0]==" " or .[0]=="\t") | alias("space");
 
 def number:
-    take_while(. > "0" and . < "9") | alias("number");
+    take_while(.[0] > "0" and .[0] < "9") | alias("number");
 
 def break_symbols:
-    "();:{}[].,* \n\t";
+    "();:{}[].,-+* \n\t";
 
 def ident:
-     take_while(inside(break_symbols) | not) | alias("ident");
+     take_while(.[0] | inside(break_symbols) | not) | alias("ident");
 
 def quote(q):
     .[1:]
-    | take_while(.!=q)
+    | take_while(.[0]!=q)
     | .text = .text[1:]
     | alias("string")
     ;
 
-def comment:
-    if (.[:2] | add) == "--" then
-        take_while(.!="\n")
+def if_chars(chars; f):
+    if (.[:(chars | length)] | add) == chars then
+        f
     else
         empty
-    end
+    end;
+
+def advance(n):
+    .text = .text[n:];
+
+def line_comment:
+    if_chars("--"; take_while(.[0]!="\n"))
     | alias("comment");
+
+def multiline_comment:
+    if_chars("(*"; take_while(.[:2]| add !="*)"))
+    # trim the '(*' at the beginning of the token
+    | .token = .token[2:]
+    # and ignore the '*)' remaining to be parsed
+    | advance(2)
+    | alias("comment")
+    ;
 
 def make_token(name): {token: {name: name}, text: .[1:]};
 
 def single_token:
     .[0] as $char
     | if $char == "(" then
-        make_token("open_round")
+        multiline_comment
+        // make_token("open_round")
     elif $char == ")" then
         make_token("close_round")
     elif $char == "{" then
@@ -61,7 +77,8 @@ def single_token:
     elif $char == "\n" or $char == ";" then
         make_token("newline")
     elif $char == "-" then
-        comment // make_token("hyphen")
+        line_comment
+        // make_token("hyphen")
     elif $char == "*" then
         make_token("star")
     elif $char == ":" then
