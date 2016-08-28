@@ -9,7 +9,8 @@ def take_while(f):
         )
     ]
     | last
-    | {token: .lines[:.index+1], text: .lines[.index+1:]};
+    | {token: .lines[:.index+1], text: .lines[.index+1:]}
+    ;
 
 def space:
     take_while(.==" ");
@@ -17,4 +18,30 @@ def space:
 def number:
     take_while(. > "0" and . < "9");
 
-def tokens: split("") | number;
+def TOKENS: [space, number];
+
+def single_token:
+    # not the most efficient
+    [
+        TOKENS
+        | .[]
+        | select(.token!=null)
+    ]
+    | first
+    ;
+
+def tokens:
+    {text: ., tokens: []}
+    | [
+        while(
+            .text != null;
+            {
+                text: .text | single_token.text,
+                tokens: (.tokens + (.text | [single_token.token]))
+            }
+        )
+    ]
+    | .[].tokens
+    | last
+    | select(.!=null)
+    ;
