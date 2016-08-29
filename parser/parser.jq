@@ -14,8 +14,7 @@ def accumulator(name):
 def apply(name; open; close):
     (.tokens | .[0]) as $tok
     | if $tok.name == "expression" or $tok.name =="block" then
-        (.tokens | .[0]).data = (
-            {tokens: $tok.data, ast: []}
+        (.tokens | .[0]).data = ( {tokens: $tok.data, ast: []}
             | apply(name; open; close).ast
         )
     else
@@ -51,6 +50,7 @@ def accumulators:
     | apply_parentheses.ast
     | {tokens: ., ast: []}
     | apply_curlies.ast
-    #| apply_angles.ast
+    | {tokens: ., ast: []}
+    | apply_angles.ast
     ;
 

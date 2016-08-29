@@ -28,10 +28,19 @@ def number:
     take_while(.[0] > "0" and .[0] < "9") | alias("number");
 
 def break_symbols:
-    "();:{}[].,-+* \n\t";
+    "();:{}<>[].,-+* \n\t";
 
 def ident:
      take_while(.[0] | inside(break_symbols) | not) | alias("ident");
+
+def make_token(name):
+    {
+        token: {
+            name: name,
+            range: .[0].char_number | [., .+1],
+        },
+        text: .[1:],
+    };
 
 def quote(q):
     .[1:]
@@ -54,6 +63,16 @@ def line_comment:
     if_chars("--"; take_while(.[0]!="\n"))
     | alias("comment");
 
+def less_than:
+    if_chars("<<"; make_token("less_than"))
+    | advance(1)
+    ;
+
+def greater_than:
+    if_chars(">>"; make_token("greater_than"))
+    | advance(1)
+    ;
+
 def multiline_comment:
     if_chars("(*"; take_while(.[:2]| add !="*)"))
     # trim the '(*' at the beginning of the token
@@ -62,15 +81,6 @@ def multiline_comment:
     | advance(2)
     | alias("comment")
     ;
-
-def make_token(name):
-    {
-        token: {
-            name: name,
-            range: .[0].char_number | [., .+1],
-        },
-        text: .[1:],
-    };
 
 def single_token:
     .[0].char as $char
@@ -90,6 +100,12 @@ def single_token:
     elif $char == "-" then
         line_comment
         // make_token("hyphen")
+    elif $char == "<" then
+        less_than
+        // make_token("open_angle")
+    elif $char == ">" then
+        greater_than
+        // make_token("close_angle")
     elif $char == "*" then
         make_token("star")
     elif $char == ":" then
