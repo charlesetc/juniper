@@ -13,7 +13,7 @@ def main:
     split("")
     | add_numbers
     | [token::tokens]
-    | parser::parentheses
+    | parser::accumulators
     ;
 
 main
