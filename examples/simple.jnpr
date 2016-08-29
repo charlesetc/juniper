@@ -8,7 +8,7 @@
 
 -- define a function
 def square { x:
-    x * x
+    (x * (x) * x)
 }
 
 def minus { a b:
