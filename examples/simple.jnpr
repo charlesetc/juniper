@@ -25,7 +25,7 @@ square 2 --> 4
 minus 2 3
 
 -- control flow
-def abs x {
+def abs { x:
     if x << 0 {
         -x
     } else {
@@ -33,7 +33,7 @@ def abs x {
     }
 }
 
-def print_times msg n {
+def print_times { msg n:
     (n.times {
         print "hi there"
     } + 2)
